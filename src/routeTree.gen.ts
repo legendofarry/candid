@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as GuidelinesRouteImport } from './routes/guidelines'
 import { Route as LeaderboardsRouteImport } from './routes/leaderboards'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PostRouteImport } from './routes/post'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -58,6 +59,11 @@ const LeaderboardsRoute = LeaderboardsRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PostRoute = PostRouteImport.update({
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/guidelines': typeof GuidelinesRoute
   '/leaderboards': typeof LeaderboardsRoute
   '/notifications': typeof NotificationsRoute
+  '/onboarding': typeof OnboardingRoute
   '/post': typeof PostRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/guidelines': typeof GuidelinesRoute
   '/leaderboards': typeof LeaderboardsRoute
   '/notifications': typeof NotificationsRoute
+  '/onboarding': typeof OnboardingRoute
   '/post': typeof PostRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/guidelines': typeof GuidelinesRoute
   '/leaderboards': typeof LeaderboardsRoute
   '/notifications': typeof NotificationsRoute
+  '/onboarding': typeof OnboardingRoute
   '/post': typeof PostRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -207,6 +216,7 @@ export interface FileRouteTypes {
     | '/guidelines'
     | '/leaderboards'
     | '/notifications'
+    | '/onboarding'
     | '/post'
     | '/privacy'
     | '/profile'
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/guidelines'
     | '/leaderboards'
     | '/notifications'
+    | '/onboarding'
     | '/post'
     | '/privacy'
     | '/profile'
@@ -251,6 +262,7 @@ export interface FileRouteTypes {
     | '/guidelines'
     | '/leaderboards'
     | '/notifications'
+    | '/onboarding'
     | '/post'
     | '/privacy'
     | '/profile'
@@ -274,6 +286,7 @@ export interface RootRouteChildren {
   GuidelinesRoute: typeof GuidelinesRoute
   LeaderboardsRoute: typeof LeaderboardsRoute
   NotificationsRoute: typeof NotificationsRoute
+  OnboardingRoute: typeof OnboardingRoute
   PostRoute: typeof PostRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
@@ -332,6 +345,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/post': {
@@ -442,6 +462,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuidelinesRoute: GuidelinesRoute,
   LeaderboardsRoute: LeaderboardsRoute,
   NotificationsRoute: NotificationsRoute,
+  OnboardingRoute: OnboardingRoute,
   PostRoute: PostRoute,
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
