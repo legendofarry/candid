@@ -28,6 +28,14 @@ export type CompanyAIProfileRecord = {
   locked: boolean;
 };
 
+export type ProfileSocials = {
+  x: string | null;
+  instagram: string | null;
+  linkedin: string | null;
+  tiktok: string | null;
+  website: string | null;
+};
+
 export type ProfileRecord = {
   id: string;
   handle: string;
@@ -35,6 +43,10 @@ export type ProfileRecord = {
   banned: boolean;
   created_at: string;
   role_label: string | null;
+  username?: string | null;
+  socials?: ProfileSocials | null;
+  account_type?: "individual" | "company" | "unknown";
+  onboarded_at?: string | null;
 };
 
 export type StoryRecord = {
