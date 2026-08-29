@@ -19,6 +19,7 @@ export type PublicStory = {
   created_at: string | null;
   reasons: string[] | null;
   would_work_again?: boolean | null;
+  author_username?: string | null;
 };
 
 export function reasonTone(reason: string) {
