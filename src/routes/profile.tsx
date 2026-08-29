@@ -28,6 +28,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getOnboardingState } from "@/lib/onboarding.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { notify as toast } from "@/lib/notifications-store";
 import { setPreference, usePreferences } from "@/lib/preferences";
@@ -95,7 +98,22 @@ function ProfilePage() {
     }
   }
 
-  const handle = user?.email ? `anon-${user.uid.slice(0, 6)}` : "Guest";
+  const fetchOnboardingState = useServerFn(getOnboardingState);
+  const onboarding = useQuery({
+    queryKey: ["onboarding-state", user?.uid ?? null],
+    queryFn: () => fetchOnboardingState(),
+    enabled: Boolean(user),
+  });
+  const socials = onboarding.data?.socials ?? null;
+  const socialLinks = socials
+    ? (Object.entries(socials) as [string, string | null][]).filter(([, value]) => Boolean(value))
+    : [];
+
+  const handle = onboarding.data?.username
+    ? `@${onboarding.data.username}`
+    : user?.email
+      ? `anon-${user.uid.slice(0, 6)}`
+      : "Guest";
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 pb-6">
@@ -114,6 +132,11 @@ function ProfilePage() {
                   : "Not signed in"}
             </p>
           </div>
+          {user && !onboarding.data?.username && !onboarding.isLoading ? (
+            <Button asChild size="sm" variant="outline" className="ml-auto">
+              <Link to="/onboarding">Claim username</Link>
+            </Button>
+          ) : null}
           {!user && !loading ? (
             <Button asChild size="sm" className="ml-auto glow-primary">
               <Link to="/auth">Sign in</Link>
