@@ -54,6 +54,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <SplashScreen />
       <RouteProgress />
       <NotificationBanners />
+      <BadgeClaimModal />
       <header className="sticky top-0 z-40 border-b border-border glass-card">
 
         <div className="app-shell flex h-16 items-center gap-3">
