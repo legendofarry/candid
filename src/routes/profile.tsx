@@ -153,7 +153,12 @@ function ProfilePage() {
             <UserRound className="size-7" />
           </div>
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-semibold">{handle}</h1>
+            <h1 className="flex items-center gap-1.5 truncate text-xl font-semibold">
+              {handle}
+              {verification.data?.badgeStatus === "claimed" ? (
+                <BadgeCheck className="size-5 shrink-0 text-verified" aria-label="Verified" />
+              ) : null}
+            </h1>
             <p className="truncate text-sm text-muted-foreground">
               {loading
                 ? "Checking your session…"
