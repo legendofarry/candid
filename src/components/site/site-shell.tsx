@@ -18,6 +18,7 @@ import { ThemeToggle } from "@/components/site/theme-toggle";
 import { SplashScreen } from "@/components/site/splash-screen";
 import { RouteProgress } from "@/components/site/route-progress";
 import { NotificationBanners } from "@/components/site/notification-banners";
+import { BadgeClaimModal } from "@/components/site/badge-claim-modal";
 import { useUnreadCount } from "@/lib/notifications-store";
 import { useAuth } from "@/hooks/useAuth";
 import {
