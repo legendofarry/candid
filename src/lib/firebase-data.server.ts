@@ -332,7 +332,20 @@ export type PublicStoryRecord = Omit<StoryRecord, "status" | "moderation_note"> 
   metoo: number | null;
   upvotes: number | null;
   would_work_again: boolean | null;
+  author_username: string | null;
 };
+
+/** Map of user id -> claimed username, for showing authors on public stories. */
+export async function readAuthorUsernames(): Promise<Map<string, string>> {
+  const profiles = await readCollection<ProfileRecord>("profiles");
+  return new Map(
+    profiles
+      .filter((profile) => Boolean(profile.username))
+      .map((profile) => [profile.id, profile.username as string] as const),
+  );
+}
+
+
 
 export async function getFilterOptionsData() {
   const companies = await readCollection<CompanyRecord>("companies");
