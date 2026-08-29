@@ -109,6 +109,32 @@ function ProfilePage() {
     ? (Object.entries(socials) as [string, string | null][]).filter(([, value]) => Boolean(value))
     : [];
 
+  const fetchVerification = useServerFn(getVerificationState);
+  const claimBadgeFn = useServerFn(claimVerificationBadge);
+  const verification = useQuery({
+    queryKey: ["verification-state", user?.uid ?? null],
+    queryFn: () => fetchVerification(),
+    enabled: Boolean(user),
+  });
+  const [claiming, setClaiming] = useState(false);
+
+  async function handleClaimBadge() {
+    setClaiming(true);
+    try {
+      const result = await claimBadgeFn();
+      if (result.ok) {
+        toast.success("Badge claimed — your account is now verified");
+        await verification.refetch();
+      } else {
+        toast.error(result.reason);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not claim the badge");
+    } finally {
+      setClaiming(false);
+    }
+  }
+
   const handle = onboarding.data?.username
     ? `@${onboarding.data.username}`
     : user?.email
