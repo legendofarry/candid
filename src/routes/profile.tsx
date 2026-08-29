@@ -190,6 +190,20 @@ function ProfilePage() {
             ))}
           </div>
         ) : null}
+        {verification.data?.canClaim ? (
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
+            <BadgeCheck className="size-5 shrink-0 text-primary" />
+            <p className="min-w-0 flex-1 text-xs text-muted-foreground">
+              {verification.data.companyName
+                ? `Your account is recognised as ${verification.data.companyName}.`
+                : "Your account is recognised as official."}{" "}
+              Claim your verified badge — it's free.
+            </p>
+            <Button size="sm" disabled={claiming} onClick={() => void handleClaimBadge()}>
+              Claim badge
+            </Button>
+          </div>
+        ) : null}
         <p className="mt-4 flex items-start gap-2 rounded-xl bg-secondary/60 p-3 text-xs text-muted-foreground">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-verified" />
           Your email is used only to sign in. Stories, votes and comments appear under an anonymous
