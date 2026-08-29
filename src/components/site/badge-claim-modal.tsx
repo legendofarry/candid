@@ -47,10 +47,10 @@ export function BadgeClaimModal() {
     try {
       const result = await claim({ data: undefined });
       if (result.ok) {
-        toast({ title: "Badge claimed", description: "Your account is now verified on Candid." });
+        toast.success("Badge claimed — your account is now verified on Candid");
         setOpen(false);
       } else {
-        toast({ title: "Not yet", description: result.reason });
+        toast.error(result.reason);
       }
     } finally {
       setBusy(false);
