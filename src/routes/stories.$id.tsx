@@ -95,7 +95,8 @@ function StoryPage() {
         </div>
         <h1 className="mt-3 text-3xl font-semibold leading-tight md:text-4xl">{story.title}</h1>
         <p className="mt-2 text-xs text-muted-foreground">
-          Anonymous contributor · {formatDate(story.created_at)}
+          {story.author_username ? `@${story.author_username}` : "Anonymous contributor"} ·{" "}
+          {formatDate(story.created_at)}
         </p>
       </div>
 
