@@ -18,6 +18,7 @@ import { ThemeToggle } from "@/components/site/theme-toggle";
 import { SplashScreen } from "@/components/site/splash-screen";
 import { RouteProgress } from "@/components/site/route-progress";
 import { NotificationBanners } from "@/components/site/notification-banners";
+import { BadgeClaimModal } from "@/components/site/badge-claim-modal";
 import { useUnreadCount } from "@/lib/notifications-store";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -53,6 +54,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <SplashScreen />
       <RouteProgress />
       <NotificationBanners />
+      <BadgeClaimModal />
       <header className="sticky top-0 z-40 border-b border-border glass-card">
 
         <div className="app-shell flex h-16 items-center gap-3">

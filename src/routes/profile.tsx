@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  BadgeCheck,
   Bell,
   BookOpen,
   ChevronRight,
@@ -31,6 +32,10 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getOnboardingState } from "@/lib/onboarding.functions";
+import {
+  claimVerificationBadge,
+  getVerificationState,
+} from "@/lib/verification.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { notify as toast } from "@/lib/notifications-store";
 import { setPreference, usePreferences } from "@/lib/preferences";
@@ -109,6 +114,32 @@ function ProfilePage() {
     ? (Object.entries(socials) as [string, string | null][]).filter(([, value]) => Boolean(value))
     : [];
 
+  const fetchVerification = useServerFn(getVerificationState);
+  const claimBadgeFn = useServerFn(claimVerificationBadge);
+  const verification = useQuery({
+    queryKey: ["verification-state", user?.uid ?? null],
+    queryFn: () => fetchVerification(),
+    enabled: Boolean(user),
+  });
+  const [claiming, setClaiming] = useState(false);
+
+  async function handleClaimBadge() {
+    setClaiming(true);
+    try {
+      const result = await claimBadgeFn();
+      if (result.ok) {
+        toast.success("Badge claimed — your account is now verified");
+        await verification.refetch();
+      } else {
+        toast.error(result.reason);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not claim the badge");
+    } finally {
+      setClaiming(false);
+    }
+  }
+
   const handle = onboarding.data?.username
     ? `@${onboarding.data.username}`
     : user?.email
@@ -123,7 +154,12 @@ function ProfilePage() {
             <UserRound className="size-7" />
           </div>
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-semibold">{handle}</h1>
+            <h1 className="flex items-center gap-1.5 truncate text-xl font-semibold">
+              {handle}
+              {verification.data?.badgeStatus === "claimed" ? (
+                <BadgeCheck className="size-5 shrink-0 text-verified" aria-label="Verified" />
+              ) : null}
+            </h1>
             <p className="truncate text-sm text-muted-foreground">
               {loading
                 ? "Checking your session…"
@@ -153,6 +189,20 @@ function ProfilePage() {
                 <span className="capitalize text-foreground">{key}</span> · {value}
               </span>
             ))}
+          </div>
+        ) : null}
+        {verification.data?.canClaim ? (
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
+            <BadgeCheck className="size-5 shrink-0 text-primary" />
+            <p className="min-w-0 flex-1 text-xs text-muted-foreground">
+              {verification.data.companyName
+                ? `Your account is recognised as ${verification.data.companyName}.`
+                : "Your account is recognised as official."}{" "}
+              Claim your verified badge — it's free.
+            </p>
+            <Button size="sm" disabled={claiming} onClick={() => void handleClaimBadge()}>
+              Claim badge
+            </Button>
           </div>
         ) : null}
         <p className="mt-4 flex items-start gap-2 rounded-xl bg-secondary/60 p-3 text-xs text-muted-foreground">
