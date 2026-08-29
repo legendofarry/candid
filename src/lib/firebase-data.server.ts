@@ -366,9 +366,10 @@ export async function getPublicStories(input: {
   companySlug?: string | null;
   limit?: number;
 }) {
-  const [companies, stories] = await Promise.all([
+  const [companies, stories, authorUsernames] = await Promise.all([
     readCollection<CompanyRecord>("companies"),
     readCollection<StoryRecord>("stories"),
+    readAuthorUsernames(),
   ]);
 
   const companiesById = new Map(companies.map((company) => [company.id, company] as const));
@@ -392,6 +393,7 @@ export async function getPublicStories(input: {
         metoo: story.metoo,
         upvotes: story.upvotes,
         would_work_again: story.would_work_again,
+        author_username: story.author_id ? (authorUsernames.get(story.author_id) ?? null) : null,
       };
     });
 
@@ -412,10 +414,11 @@ export async function getCompanyView(slug: string) {
   const company = companies.find((entry) => entry.slug === slug) ?? null;
   if (!company) return null;
 
-  const [scores, profile, stories] = await Promise.all([
+  const [scores, profile, stories, authorUsernames] = await Promise.all([
     buildCompanyScores(),
     readDocument<CompanyAIProfileRecord>("company_ai_profiles", company.id),
     readCollection<StoryRecord>("stories"),
+    readAuthorUsernames(),
   ]);
 
   return {
@@ -437,6 +440,7 @@ export async function getCompanyView(slug: string) {
         metoo: story.metoo,
         upvotes: story.upvotes,
         would_work_again: story.would_work_again,
+        author_username: story.author_id ? (authorUsernames.get(story.author_id) ?? null) : null,
       })),
   };
 }
@@ -448,6 +452,9 @@ export async function getStoryView(id: string) {
   const company =
     (story.company_id ? await readDocument<CompanyRecord>("companies", story.company_id) : null) ??
     null;
+  const authorProfile = story.author_id
+    ? await readDocument<ProfileRecord>("profiles", story.author_id)
+    : null;
   const comments = (await readCollection<CommentRecord>("comments"))
     .filter((comment) => comment.status === "published")
     .filter((comment) => comment.story_id === id);
@@ -462,6 +469,7 @@ export async function getStoryView(id: string) {
       metoo: story.metoo,
       upvotes: story.upvotes,
       would_work_again: story.would_work_again,
+      author_username: authorProfile?.username ?? null,
     } as PublicStoryRecord,
     comments,
   };
@@ -471,9 +479,10 @@ export async function searchData(queryText: string) {
   const q = queryText.trim().toLowerCase();
   if (q.length < 2) return { companies: [], stories: [] };
 
-  const [companies, stories] = await Promise.all([
+  const [companies, stories, authorUsernames] = await Promise.all([
     readCollection<CompanyRecord>("companies"),
     readCollection<StoryRecord>("stories"),
+    readAuthorUsernames(),
   ]);
 
   const companyMatches = companies
@@ -512,6 +521,7 @@ export async function searchData(queryText: string) {
       metoo: story.metoo,
       upvotes: story.upvotes,
       would_work_again: story.would_work_again,
+      author_username: story.author_id ? (authorUsernames.get(story.author_id) ?? null) : null,
     }));
 
   return { companies: companyMatches, stories: storyMatches };
