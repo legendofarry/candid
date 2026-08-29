@@ -20,6 +20,8 @@ import { firebaseAuth } from "@/integrations/firebase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useServerFn } from "@tanstack/react-start";
+import { getOnboardingState } from "@/lib/onboarding.functions";
 
 
 export const Route = createFileRoute("/auth")({
@@ -50,6 +52,17 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [hasBiometric, setHasBiometric] = useState(false);
+  const fetchOnboardingState = useServerFn(getOnboardingState);
+
+  /** Send people who have not claimed a username to onboarding first. */
+  async function continueAfterAuth() {
+    try {
+      const state = await fetchOnboardingState();
+      navigate({ to: state.needsOnboarding ? "/onboarding" : "/" });
+    } catch {
+      navigate({ to: "/onboarding" });
+    }
+  }
 
   useEffect(() => {
     setHasBiometric(getCredentials().length > 0);
@@ -75,11 +88,12 @@ function AuthPage() {
       if (mode === "signup") {
         await createUserWithEmailAndPassword(firebaseAuth, email, password);
         toast.success("Account created.");
-      } else {
-        await signInWithEmailAndPassword(firebaseAuth, email, password);
-        toast.success("Signed in. You are anonymous to everyone else.");
+        navigate({ to: "/onboarding" });
+        return;
       }
-      navigate({ to: "/" });
+      await signInWithEmailAndPassword(firebaseAuth, email, password);
+      toast.success("Signed in. You are anonymous to everyone else.");
+      await continueAfterAuth();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Something went wrong");
     } finally {
@@ -108,7 +122,7 @@ function AuthPage() {
       }
 
       toast.success("Signed in. You are anonymous to everyone else.");
-      navigate({ to: "/" });
+      await continueAfterAuth();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Google sign-in failed";
       if (!message.includes("popup-closed-by-user") && !message.includes("cancelled-popup")) {
