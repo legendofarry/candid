@@ -31,6 +31,10 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getOnboardingState } from "@/lib/onboarding.functions";
+import {
+  claimVerificationBadge,
+  getVerificationState,
+} from "@/lib/verification.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { notify as toast } from "@/lib/notifications-store";
 import { setPreference, usePreferences } from "@/lib/preferences";
