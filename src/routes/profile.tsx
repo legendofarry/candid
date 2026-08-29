@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  BadgeCheck,
   Bell,
   BookOpen,
   ChevronRight,
