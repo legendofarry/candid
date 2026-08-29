@@ -107,7 +107,7 @@ export async function resolveVerification(
   if (corporate && domain) {
     const snapshot = await db.collection("companies").get();
     const companies = snapshot.docs.map(
-      (doc) => ({ id: doc.id, ...(doc.data() as CompanyRecord) }) as CompanyRecord,
+      (doc) => ({ ...(doc.data() as CompanyRecord), id: doc.id }) as CompanyRecord,
     );
     company = matchCompanyByDomain(domain, companies);
   }
