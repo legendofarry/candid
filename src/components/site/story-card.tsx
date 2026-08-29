@@ -19,6 +19,7 @@ export type PublicStory = {
   created_at: string | null;
   reasons: string[] | null;
   would_work_again?: boolean | null;
+  author_username?: string | null;
 };
 
 export function reasonTone(reason: string) {
@@ -91,7 +92,10 @@ export function StoryCard({ story, index = 0 }: { story: PublicStory; index?: nu
       </div>
 
       <div className="mt-4 flex items-center gap-5 text-xs text-muted-foreground">
-        <span className="ml-auto">Anonymous · {formatDate(story.created_at)}</span>
+        <span className="ml-auto">
+          {story.author_username ? `@${story.author_username}` : "Anonymous"} ·{" "}
+          {formatDate(story.created_at)}
+        </span>
       </div>
 
       {story.id ? (

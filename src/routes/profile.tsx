@@ -28,6 +28,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getOnboardingState } from "@/lib/onboarding.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { notify as toast } from "@/lib/notifications-store";
 import { setPreference, usePreferences } from "@/lib/preferences";
@@ -95,7 +98,22 @@ function ProfilePage() {
     }
   }
 
-  const handle = user?.email ? `anon-${user.uid.slice(0, 6)}` : "Guest";
+  const fetchOnboardingState = useServerFn(getOnboardingState);
+  const onboarding = useQuery({
+    queryKey: ["onboarding-state", user?.uid ?? null],
+    queryFn: () => fetchOnboardingState(),
+    enabled: Boolean(user),
+  });
+  const socials = onboarding.data?.socials ?? null;
+  const socialLinks = socials
+    ? (Object.entries(socials) as [string, string | null][]).filter(([, value]) => Boolean(value))
+    : [];
+
+  const handle = onboarding.data?.username
+    ? `@${onboarding.data.username}`
+    : user?.email
+      ? `anon-${user.uid.slice(0, 6)}`
+      : "Guest";
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 pb-6">
@@ -114,12 +132,29 @@ function ProfilePage() {
                   : "Not signed in"}
             </p>
           </div>
+          {user && !onboarding.data?.username && !onboarding.isLoading ? (
+            <Button asChild size="sm" variant="outline" className="ml-auto">
+              <Link to="/onboarding">Claim username</Link>
+            </Button>
+          ) : null}
           {!user && !loading ? (
             <Button asChild size="sm" className="ml-auto glow-primary">
               <Link to="/auth">Sign in</Link>
             </Button>
           ) : null}
         </div>
+        {socialLinks.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {socialLinks.map(([key, value]) => (
+              <span
+                key={key}
+                className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground"
+              >
+                <span className="capitalize text-foreground">{key}</span> · {value}
+              </span>
+            ))}
+          </div>
+        ) : null}
         <p className="mt-4 flex items-start gap-2 rounded-xl bg-secondary/60 p-3 text-xs text-muted-foreground">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-verified" />
           Your email is used only to sign in. Stories, votes and comments appear under an anonymous
