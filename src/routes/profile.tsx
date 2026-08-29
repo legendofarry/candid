@@ -143,6 +143,18 @@ function ProfilePage() {
             </Button>
           ) : null}
         </div>
+        {socialLinks.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {socialLinks.map(([key, value]) => (
+              <span
+                key={key}
+                className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground"
+              >
+                <span className="capitalize text-foreground">{key}</span> · {value}
+              </span>
+            ))}
+          </div>
+        ) : null}
         <p className="mt-4 flex items-start gap-2 rounded-xl bg-secondary/60 p-3 text-xs text-muted-foreground">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-verified" />
           Your email is used only to sign in. Stories, votes and comments appear under an anonymous
