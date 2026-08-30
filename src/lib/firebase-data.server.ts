@@ -514,8 +514,20 @@ export async function getStoryView(id: string) {
     else roots.push(comment);
   }
 
+  // A thread containing an official reply anywhere floats to the top.
+  const officialInThread = new Map<string, boolean>();
+  const markOfficial = (comment: PublicComment): boolean => {
+    const childHas = comment.replies.map(markOfficial).some(Boolean);
+    const has = comment.is_official || childHas;
+    officialInThread.set(comment.id, has);
+    return has;
+  };
+  for (const root of roots) markOfficial(root);
+
   const score = (comment: PublicComment): number =>
-    (comment.is_official ? 1_000_000 : 0) + comment.likes * 3 + comment.replies.length * 2;
+    (officialInThread.get(comment.id) ? 1_000_000 : 0) +
+    comment.likes * 3 +
+    comment.replies.length * 2;
   const sortTree = (list: PublicComment[]) => {
     list.sort((a, b) => {
       const diff = score(b) - score(a);
@@ -524,17 +536,6 @@ export async function getStoryView(id: string) {
     });
     for (const item of list) sortTree(item.replies);
   };
-  // A reply thread containing an official response floats to the top too.
-  const bubbleOfficial = (list: PublicComment[]): boolean => {
-    let hasOfficial = false;
-    for (const item of list) {
-      const childOfficial = bubbleOfficial(item.replies);
-      if (childOfficial) item.is_official = item.is_official || false;
-      if (item.is_official || childOfficial) hasOfficial = true;
-    }
-    return hasOfficial;
-  };
-  bubbleOfficial(roots);
   sortTree(roots);
 
   return {
