@@ -79,8 +79,21 @@ export type CommentRecord = {
   status: string;
   author_id: string | null;
   author_handle: string;
+  author_username?: string | null;
+  author_verified?: boolean;
+  is_official?: boolean;
+  likes?: number;
   created_at: string;
 };
+
+export type PublicComment = CommentRecord & {
+  author_username: string | null;
+  author_verified: boolean;
+  is_official: boolean;
+  likes: number;
+  replies: PublicComment[];
+};
+
 
 export type VoteRecord = {
   id: string;
