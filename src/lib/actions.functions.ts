@@ -222,6 +222,24 @@ export const addComment = createServerFn({ method: "POST" })
     const storyRef = db.collection("stories").doc(data.story_id);
     const storySnap = await storyRef.get();
     const currentStory = storySnap.exists ? storySnap.data() : null;
+
+    const verificationSnap = await db
+      .collection("account_verifications")
+      .doc(context.userId)
+      .get();
+    const verification = verificationSnap.exists
+      ? (verificationSnap.data() as {
+          account_type?: string;
+          company_id?: string | null;
+          badge_status?: string;
+        })
+      : null;
+    const isOfficial = Boolean(
+      verification?.account_type === "company" &&
+        verification.company_id &&
+        verification.company_id === currentStory?.["company_id"],
+    );
+
     await db
       .collection("comments")
       .doc(commentId)
@@ -230,11 +248,70 @@ export const addComment = createServerFn({ method: "POST" })
         ...data,
         author_id: context.userId,
         author_handle: profile?.handle ?? "Anonymous",
+        author_username: profile?.username ?? null,
+        author_verified: verification?.badge_status === "claimed",
+        is_official: isOfficial,
+        likes: 0,
         status: "published",
         created_at: new Date().toISOString(),
       });
-    await storyRef.update({ comment_count: Number(currentStory?.['comment_count'] ?? 0) + 1 });
-    return { ok: true };
+    await storyRef.update({ comment_count: Number(currentStory?.["comment_count"] ?? 0) + 1 });
+    return { ok: true, id: commentId };
+  });
+
+/** Toggles a like on a comment or reply. */
+export const likeComment = createServerFn({ method: "POST" })
+  .middleware([requireFirebaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ comment_id: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const db = context.db ?? getFirestoreDb();
+    const likeRef = db.collection("comment_likes").doc(`${data.comment_id}:${context.userId}`);
+    const commentRef = db.collection("comments").doc(data.comment_id);
+    const [likeSnap, commentSnap] = await Promise.all([likeRef.get(), commentRef.get()]);
+    const current = Number((commentSnap.data() as { likes?: number } | undefined)?.likes ?? 0);
+
+    if (likeSnap.exists) {
+      await likeRef.delete();
+      await commentRef.update({ likes: Math.max(0, current - 1) });
+      return { liked: false, likes: Math.max(0, current - 1) };
+    }
+
+    await likeRef.set({
+      comment_id: data.comment_id,
+      user_id: context.userId,
+      created_at: new Date().toISOString(),
+    });
+    await commentRef.update({ likes: current + 1 });
+    return { liked: true, likes: current + 1 };
+  });
+
+/** What the signed-in user has already done on this story (likes, votes, reports). */
+export const getMyEngagement = createServerFn({ method: "POST" })
+  .middleware([requireFirebaseAuth])
+  .inputValidator((input: unknown) => z.object({ story_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const db = context.db ?? getFirestoreDb();
+    const [likes, votes, reports] = await Promise.all([
+      db.collection("comment_likes").where("user_id", "==", context.userId).get(),
+      db
+        .collection("votes")
+        .where("user_id", "==", context.userId)
+        .where("story_id", "==", data.story_id)
+        .get(),
+      db.collection("reports").where("reporter_id", "==", context.userId).get(),
+    ]);
+
+    return {
+      likedCommentIds: likes.docs.map(
+        (doc) => (doc.data() as { comment_id: string }).comment_id,
+      ),
+      votedKinds: votes.docs.map((doc) => (doc.data() as { kind: string }).kind),
+      reportedTargetIds: reports.docs.map(
+        (doc) => (doc.data() as { target_id: string }).target_id,
+      ),
+    };
   });
 
 export const submitReport = createServerFn({ method: "POST" })
@@ -244,25 +321,37 @@ export const submitReport = createServerFn({ method: "POST" })
       .object({
         target_type: z.enum(["story", "comment"]),
         target_id: z.string().uuid(),
-        reason: z.string().min(2).max(80),
+        reasons: z.array(z.string().min(2).max(80)).min(1).max(6).optional(),
+        reason: z.string().min(2).max(80).optional(),
         detail: z.string().max(1000).nullable().default(null),
       })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
     const db = context.db ?? getFirestoreDb();
-    const reportId = generateId();
+    const reasons = data.reasons ?? (data.reason ? [data.reason] : []);
+    if (reasons.length === 0) throw new Error("Select at least one reason");
+
+    // Deterministic id keeps reporting to once per user per target.
+    const reportId = `${data.target_type}:${data.target_id}:${context.userId}`;
+    const existing = await db.collection("reports").doc(reportId).get();
+    if (existing.exists) return { ok: true, alreadyReported: true };
+
     await db
       .collection("reports")
       .doc(reportId)
       .set({
         id: reportId,
-        ...data,
+        target_type: data.target_type,
+        target_id: data.target_id,
+        reasons,
+        reason: reasons.join(", "),
+        detail: data.detail,
         reporter_id: context.userId,
         status: "open",
         created_at: new Date().toISOString(),
       });
-    return { ok: true };
+    return { ok: true, alreadyReported: false };
   });
 
 export const rateCompany = createServerFn({ method: "POST" })
