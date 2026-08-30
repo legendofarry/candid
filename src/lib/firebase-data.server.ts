@@ -79,8 +79,21 @@ export type CommentRecord = {
   status: string;
   author_id: string | null;
   author_handle: string;
+  author_username?: string | null;
+  author_verified?: boolean;
+  is_official?: boolean;
+  likes?: number;
   created_at: string;
 };
+
+export type PublicComment = CommentRecord & {
+  author_username: string | null;
+  author_verified: boolean;
+  is_official: boolean;
+  likes: number;
+  replies: PublicComment[];
+};
+
 
 export type VoteRecord = {
   id: string;
@@ -455,9 +468,75 @@ export async function getStoryView(id: string) {
   const authorProfile = story.author_id
     ? await readDocument<ProfileRecord>("profiles", story.author_id)
     : null;
-  const comments = (await readCollection<CommentRecord>("comments"))
+  const rawComments = (await readCollection<CommentRecord>("comments"))
     .filter((comment) => comment.status === "published")
     .filter((comment) => comment.story_id === id);
+
+  const profiles = await readCollection<ProfileRecord>("profiles");
+  const profilesById = new Map(profiles.map((profile) => [profile.id, profile] as const));
+  const verifications = await readCollection<{
+    user_id?: string;
+    id?: string;
+    company_id?: string | null;
+    badge_status?: string;
+    account_type?: string;
+  }>("account_verifications");
+  const verificationByUser = new Map(
+    verifications.map((entry) => [entry.user_id ?? entry.id ?? "", entry] as const),
+  );
+
+  const enriched: PublicComment[] = rawComments.map((comment) => {
+    const profile = comment.author_id ? profilesById.get(comment.author_id) : null;
+    const verification = comment.author_id ? verificationByUser.get(comment.author_id) : null;
+    const official =
+      comment.is_official ??
+      Boolean(
+        verification &&
+          verification.account_type === "company" &&
+          verification.company_id &&
+          verification.company_id === story.company_id,
+      );
+    return {
+      ...comment,
+      author_username: comment.author_username ?? profile?.username ?? null,
+      author_verified: comment.author_verified ?? verification?.badge_status === "claimed",
+      is_official: official,
+      likes: Number(comment.likes ?? 0),
+      replies: [],
+    };
+  });
+
+  const byId = new Map(enriched.map((comment) => [comment.id, comment] as const));
+  const roots: PublicComment[] = [];
+  for (const comment of enriched) {
+    const parent = comment.parent_id ? byId.get(comment.parent_id) : null;
+    if (parent) parent.replies.push(comment);
+    else roots.push(comment);
+  }
+
+  // A thread containing an official reply anywhere floats to the top.
+  const officialInThread = new Map<string, boolean>();
+  const markOfficial = (comment: PublicComment): boolean => {
+    const childHas = comment.replies.map(markOfficial).some(Boolean);
+    const has = comment.is_official || childHas;
+    officialInThread.set(comment.id, has);
+    return has;
+  };
+  for (const root of roots) markOfficial(root);
+
+  const score = (comment: PublicComment): number =>
+    (officialInThread.get(comment.id) ? 1_000_000 : 0) +
+    comment.likes * 3 +
+    comment.replies.length * 2;
+  const sortTree = (list: PublicComment[]) => {
+    list.sort((a, b) => {
+      const diff = score(b) - score(a);
+      if (diff !== 0) return diff;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+    for (const item of list) sortTree(item.replies);
+  };
+  sortTree(roots);
 
   return {
     story: {
@@ -471,7 +550,8 @@ export async function getStoryView(id: string) {
       would_work_again: story.would_work_again,
       author_username: authorProfile?.username ?? null,
     } as PublicStoryRecord,
-    comments,
+    comments: roots,
+    commentTotal: enriched.length,
   };
 }
 
