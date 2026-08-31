@@ -98,24 +98,21 @@ export function StoryActions({
         />
         <ActionChip
           icon={<Flag className="size-4" />}
-          label=""
-          hint="Report"
-          disabled={!user}
+          label={reported ? "Reported" : ""}
+          hint={reported ? "Already reported" : "Report"}
+          disabled={!user || reported}
           className="ml-auto text-danger"
-          onClick={() =>
-            report({
-              data: {
-                target_type: "story",
-                target_id: storyId,
-                reason: "user report",
-                detail: null,
-              },
-            })
-              .then(() => toast.success("Report sent to moderators"))
-              .catch((error: Error) => toast.error(error.message))
-          }
+          onClick={() => setReportOpen(true)}
         />
       </div>
+
+      <ReportDialog
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        targetType="story"
+        targetId={storyId}
+        onReported={() => setReported(true)}
+      />
 
       {open ? (
         <div className="animate-fade mt-3 space-y-3 rounded-xl bg-secondary/40 p-3">
