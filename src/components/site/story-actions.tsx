@@ -6,7 +6,8 @@ import { ArrowBigUp, Flag, Loader2, MessageSquare, Send, Users } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { notify as toast } from "@/lib/notifications-store";
-import { addComment, castVote, submitReport } from "@/lib/actions.functions";
+import { addComment, castVote } from "@/lib/actions.functions";
+import { ReportDialog } from "@/components/site/report-dialog";
 import { getStory } from "@/lib/public.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDate } from "@/components/site/story-card";
@@ -28,8 +29,9 @@ export function StoryActions({
   const queryClient = useQueryClient();
   const vote = useServerFn(castVote);
   const comment = useServerFn(addComment);
-  const report = useServerFn(submitReport);
   const [open, setOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reported, setReported] = useState(false);
   const [body, setBody] = useState("");
   const [optimistic, setOptimistic] = useState<{ up: number; metoo: number; comments: number }>({
     up: 0,
