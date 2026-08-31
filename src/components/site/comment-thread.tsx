@@ -233,7 +233,7 @@ function CommentRow({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       className={cn("px-4 py-3", depth > 0 && "border-l border-border/60 pl-3")}
-      style={depth > 0 ? { marginLeft: Math.min(depth, 3) * 16 } : undefined}
+      style={{ marginLeft: depth > 0 ? Math.min(depth, 3) * 16 : 0 }}
     >
       <div className="flex gap-3">
         <span
