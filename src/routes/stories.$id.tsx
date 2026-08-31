@@ -49,28 +49,30 @@ function StoryPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const vote = useServerFn(castVote);
-  const comment = useServerFn(addComment);
-  const report = useServerFn(submitReport);
-  const [body, setBody] = useState("");
+  const engagementFn = useServerFn(getMyEngagement);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [locallyReported, setLocallyReported] = useState(false);
+
+  const engagement = useQuery({
+    queryKey: ["engagement", id, user?.uid ?? "anon"],
+    queryFn: () => engagementFn({ data: { story_id: id } }),
+    enabled: Boolean(user),
+  });
 
   const voteMutation = useMutation({
     mutationFn: (kind: "up" | "metoo") => vote({ data: { story_id: id, kind } }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["story", id] }),
-    onError: (error: Error) => toast.error(error.message),
-  });
-
-  const commentMutation = useMutation({
-    mutationFn: () => comment({ data: { story_id: id, parent_id: null, body } }),
     onSuccess: () => {
-      setBody("");
-      toast.success("Comment posted anonymously");
-      queryClient.invalidateQueries({ queryKey: ["story", id] });
+      void queryClient.invalidateQueries({ queryKey: ["story", id] });
+      void engagement.refetch();
     },
     onError: (error: Error) => toast.error(error.message),
   });
 
   if (!data) return null;
   const { story, comments } = data;
+  const isReported =
+    locallyReported || (engagement.data?.reportedTargetIds ?? []).includes(id);
+  const votedKinds = engagement.data?.votedKinds ?? [];
 
   return (
     <article className="mx-auto max-w-3xl space-y-6">
@@ -122,14 +124,14 @@ function StoryPage() {
 
       <div className="flex flex-wrap items-center gap-2">
         <Button
-          variant="outline"
+          variant={votedKinds.includes("up") ? "default" : "outline"}
           disabled={!user || voteMutation.isPending}
           onClick={() => voteMutation.mutate("up")}
         >
-          <ArrowBigUp className="size-4 text-primary" /> Upvote {story.upvotes ?? 0}
+          <ArrowBigUp className="size-4" /> Upvote {story.upvotes ?? 0}
         </Button>
         <Button
-          variant="outline"
+          variant={votedKinds.includes("metoo") ? "default" : "outline"}
           disabled={!user || voteMutation.isPending}
           onClick={() => voteMutation.mutate("metoo")}
         >
@@ -138,16 +140,10 @@ function StoryPage() {
         <Button
           variant="ghost"
           className="ml-auto text-danger"
-          disabled={!user}
-          onClick={() =>
-            report({
-              data: { target_type: "story", target_id: id, reason: "user report", detail: null },
-            })
-              .then(() => toast.success("Report sent to moderators"))
-              .catch((error: Error) => toast.error(error.message))
-          }
+          disabled={!user || isReported}
+          onClick={() => setReportOpen(true)}
         >
-          <Flag className="size-4" /> Report
+          <Flag className="size-4" /> {isReported ? "Reported" : "Report"}
         </Button>
       </div>
 
@@ -156,40 +152,26 @@ function StoryPage() {
           <Link to="/auth" className="font-medium text-primary">
             Sign in
           </Link>{" "}
-          to upvote, add “me too” or comment. Your identity is never shown.
+          to upvote, add “me too” or comment.
         </p>
       ) : null}
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">{comments.length} comments</h2>
-        {user ? (
-          <div className="space-y-2">
-            <Textarea
-              value={body}
-              onChange={(event) => setBody(event.target.value)}
-              placeholder="Add context, or share what happened to you. No names of individuals."
-              rows={3}
-            />
-            <Button
-              disabled={body.trim().length < 2 || commentMutation.isPending}
-              onClick={() => commentMutation.mutate()}
-            >
-              Post anonymously
-            </Button>
-          </div>
-        ) : null}
+      <CommentThread storyId={id} comments={comments} total={countComments(comments)} />
 
-        <ul className="space-y-3">
-          {comments.map((item) => (
-            <li key={item.id} className="rounded-2xl border border-border bg-card p-4">
-              <p className="text-xs font-medium text-muted-foreground">
-                {item.author_handle} · {formatDate(item.created_at)}
-              </p>
-              <p className="mt-1.5 text-sm">{item.body}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <ReportDialog
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        targetType="story"
+        targetId={id}
+        onReported={() => {
+          setLocallyReported(true);
+          void engagement.refetch();
+        }}
+      />
     </article>
   );
+}
+
+function countComments(list: ThreadComment[]): number {
+  return list.reduce((total, item) => total + 1 + countComments(item.replies), 0);
 }
