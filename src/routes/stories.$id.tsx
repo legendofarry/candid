@@ -1,16 +1,23 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { ArrowBigUp, Flag, MapPin, Users } from "lucide-react";
 import { notify as toast } from "@/lib/notifications-store";
 import { getStory } from "@/lib/public.functions";
-import { addComment, castVote, submitReport } from "@/lib/actions.functions";
+import { castVote, getMyEngagement } from "@/lib/actions.functions";
 import { formatDate, reasonTone } from "@/components/site/story-card";
+import { CommentThread, type ThreadComment } from "@/components/site/comment-thread";
+import { ReportDialog } from "@/components/site/report-dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { BackButton } from "@/components/site/back-button";
 
 const storyQuery = (id: string) =>
