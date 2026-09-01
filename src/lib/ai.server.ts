@@ -67,3 +67,33 @@ export async function researchCompany(input: {
     return null;
   }
 }
+
+/** Short catch-up on what changed in a story thread since the reader last looked. */
+export async function summarizeStoryActivity(input: {
+  title: string;
+  body: string;
+  comments: string[];
+}) {
+  if (input.comments.length === 0) return "Nothing new since you last checked in on this story.";
+
+  const key = process.env["OPENROUTER_API_KEY"];
+  if (!key) {
+    return `${input.comments.length} new ${input.comments.length === 1 ? "comment" : "comments"} since you last checked in.`;
+  }
+
+  const gateway = createOpenRouterProvider(key);
+  try {
+    const { text } = await generateText({
+      model: gateway(AI_MODEL),
+      system:
+        "You summarise new activity on an anonymous Kenyan workplace story thread for someone who already read the story. Write 2-3 short sentences starting from what has changed since they last looked. Neutral, factual, no names of individuals, no advice, under 60 words.",
+      prompt: `Story title: ${input.title}\n\nStory: ${input.body.slice(0, 1200)}\n\nNew comments since the reader last looked:\n${input.comments
+        .map((comment, index) => `${index + 1}. ${comment}`)
+        .join("\n")}`,
+    });
+    return text.trim();
+  } catch (error) {
+    console.error("[summarizeStoryActivity]", error);
+    return `${input.comments.length} new ${input.comments.length === 1 ? "comment" : "comments"} since you last checked in.`;
+  }
+}
