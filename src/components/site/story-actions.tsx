@@ -11,7 +11,9 @@ import { ReportDialog } from "@/components/site/report-dialog";
 import { getStory } from "@/lib/public.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDate } from "@/components/site/story-card";
+import { StorySocial } from "@/components/site/story-social";
 import { cn } from "@/lib/utils";
+
 
 /** Inline vote + comment bar so people can act without leaving the feed. */
 export function StoryActions({
@@ -98,6 +100,8 @@ export function StoryActions({
           active={open}
           onClick={() => setOpen((value) => !value)}
         />
+        <StorySocial storyId={storyId} />
+
         <ActionChip
           icon={<Flag className="size-4" />}
           label={reported ? "Reported" : ""}

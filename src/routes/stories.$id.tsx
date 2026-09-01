@@ -19,6 +19,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/site/back-button";
+import { StorySocial } from "@/components/site/story-social";
+
 
 const storyQuery = (id: string) =>
   queryOptions({ queryKey: ["story", id], queryFn: () => getStory({ data: { id } }) });
@@ -144,7 +146,9 @@ function StoryPage() {
         >
           <Users className="size-4" /> This happened to me too {story.metoo ?? 0}
         </Button>
+        <StorySocial storyId={id} />
         <Button
+
           variant="ghost"
           className="ml-auto text-danger"
           disabled={!user || isReported}

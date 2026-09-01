@@ -36,6 +36,7 @@ import {
   claimVerificationBadge,
   getVerificationState,
 } from "@/lib/verification.functions";
+import { FollowedStories } from "@/components/site/followed-stories";
 import { useAuth } from "@/hooks/useAuth";
 import { notify as toast } from "@/lib/notifications-store";
 import { setPreference, usePreferences } from "@/lib/preferences";
@@ -211,6 +212,8 @@ function ProfilePage() {
           handle.
         </p>
       </section>
+
+      <FollowedStories />
 
       <SettingsGroup title="Security & fast access">
         <ToggleRow
