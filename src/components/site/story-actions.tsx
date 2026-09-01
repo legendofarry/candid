@@ -98,6 +98,8 @@ export function StoryActions({
           active={open}
           onClick={() => setOpen((value) => !value)}
         />
+        <StorySocial storyId={storyId} />
+
         <ActionChip
           icon={<Flag className="size-4" />}
           label={reported ? "Reported" : ""}
