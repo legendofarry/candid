@@ -144,7 +144,9 @@ function StoryPage() {
         >
           <Users className="size-4" /> This happened to me too {story.metoo ?? 0}
         </Button>
+        <StorySocial storyId={id} />
         <Button
+
           variant="ghost"
           className="ml-auto text-danger"
           disabled={!user || isReported}
