@@ -249,37 +249,3 @@ function SignalPanel() {
     </div>
   );
 }
-
-function FilterGroup({
-  title,
-  options,
-  value,
-  onChange,
-}: {
-  title: string;
-  options: string[];
-  value: string | null;
-  onChange: (next: string | null) => void;
-}) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {title}
-      </h2>
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {options.map((option) => (
-          <button
-            key={option}
-            onClick={() => onChange(value === option ? null : option)}
-            className={cn(
-              "rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground",
-              value === option && "border-primary/50 bg-primary/10 text-foreground",
-            )}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
