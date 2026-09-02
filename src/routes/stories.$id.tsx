@@ -18,7 +18,6 @@ import { ReportDialog } from "@/components/site/report-dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BackButton } from "@/components/site/back-button";
 import { StorySocial } from "@/components/site/story-social";
 
 
@@ -85,7 +84,6 @@ function StoryPage() {
 
   return (
     <article className="mx-auto max-w-3xl space-y-6">
-      <BackButton fallback="/" />
       <div className="animate-fade">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {story.company_slug ? (
