@@ -5,10 +5,9 @@ import { Activity, Flame, MapPin, PenLine, ShieldCheck, TrendingUp } from "lucid
 import { getFilterOptions, listStories } from "@/lib/public.functions";
 import { StoryCard } from "@/components/site/story-card";
 import { PulseLoader } from "@/components/site/route-progress";
-
+import { FilterBar } from "@/components/site/filter-bar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 
 const feedQuery = queryOptions({
   queryKey: ["stories", "new"],
