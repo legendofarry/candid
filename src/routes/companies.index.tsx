@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
 import { listCompanyScores } from "@/lib/public.functions";
-import { Input } from "@/components/ui/input";
+import { FilterBar } from "@/components/site/filter-bar";
 import { cn } from "@/lib/utils";
 
 const companiesQuery = queryOptions({
