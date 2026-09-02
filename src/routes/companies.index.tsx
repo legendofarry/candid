@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
 import { listCompanyScores } from "@/lib/public.functions";
-import { Input } from "@/components/ui/input";
+import { FilterBar } from "@/components/site/filter-bar";
 import { cn } from "@/lib/utils";
 
 const companiesQuery = queryOptions({
@@ -66,44 +65,37 @@ function CompaniesPage() {
         </p>
       </header>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-56 flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={q}
-            onChange={(event) => setQ(event.target.value)}
-            placeholder="Search employers"
-            className="pl-9"
-          />
-        </div>
-        {(["discussed", "score", "az"] as SortKey[]).map((key) => (
-          <button
-            key={key}
-            onClick={() => setSort(key)}
-            className={cn(
-              "rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground",
-              sort === key && "border-primary/50 bg-primary/10 text-foreground",
-            )}
-          >
-            {key === "discussed" ? "Most discussed" : key === "score" ? "Best rated" : "A–Z"}
-          </button>
-        ))}
-      </div>
+      <FilterBar
+        query={q}
+        onQueryChange={setQ}
+        placeholder="Search employers…"
+        canReset={Boolean(q) || industry !== null || sort !== "discussed"}
+        onReset={() => {
+          setQ("");
+          setIndustry(null);
+          setSort("discussed");
+        }}
+        filters={[
+          {
+            id: "sort",
+            label: "Sort",
+            value: sort,
+            required: true,
+            options: ["discussed", "score", "az"],
+            optionLabel: (key) =>
+              key === "discussed" ? "Most discussed" : key === "score" ? "Best rated" : "A–Z",
+            onChange: (next) => setSort((next as SortKey) ?? "discussed"),
+          },
+          {
+            id: "industry",
+            label: "Industry",
+            value: industry,
+            options: industries,
+            onChange: setIndustry,
+          },
+        ]}
+      />
 
-      <div className="flex flex-wrap gap-1.5">
-        {industries.map((option) => (
-          <button
-            key={option}
-            onClick={() => setIndustry(industry === option ? null : option)}
-            className={cn(
-              "rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground",
-              industry === option && "border-primary/50 bg-primary/10 text-foreground",
-            )}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {rows.map((company, index) => (

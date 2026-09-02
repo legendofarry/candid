@@ -5,10 +5,9 @@ import { Activity, Flame, MapPin, PenLine, ShieldCheck, TrendingUp } from "lucid
 import { getFilterOptions, listStories } from "@/lib/public.functions";
 import { StoryCard } from "@/components/site/story-card";
 import { PulseLoader } from "@/components/site/route-progress";
-
+import { FilterBar } from "@/components/site/filter-bar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 
 const feedQuery = queryOptions({
   queryKey: ["stories", "new"],
@@ -56,11 +55,24 @@ function FeedPage() {
   const [sort, setSort] = useState<"new" | "top" | "trending">("new");
   const [industry, setIndustry] = useState<string | null>(null);
   const [county, setCounty] = useState<string | null>(null);
+  const [q, setQ] = useState("");
 
   const { data, isPending } = useQuery({
     queryKey: ["stories", sort, industry, county],
     queryFn: () => listStories({ data: { sort, industry, county } }),
   });
+
+  const needle = q.trim().toLowerCase();
+  const stories = (data?.stories ?? []).filter((story) =>
+    needle
+      ? [story.title, story.body, story.company_name ?? ""]
+          .join(" ")
+          .toLowerCase()
+          .includes(needle)
+      : true,
+  );
+
+  const canReset = Boolean(needle) || industry !== null || county !== null || sort !== "new";
 
   return (
     <div className="space-y-8">
@@ -93,37 +105,45 @@ function FeedPage() {
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)_240px] xl:grid-cols-[minmax(220px,280px)_minmax(0,1fr)_minmax(240px,320px)] 2xl:grid-cols-[280px_minmax(640px,1fr)_320px]">
-        <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
-          <FilterGroup
-            title="Industry"
-            options={filters.industries}
-            value={industry}
-            onChange={setIndustry}
-          />
-          <FilterGroup
-            title="County"
-            options={filters.counties}
-            value={county}
-            onChange={setCounty}
-          />
-        </aside>
-
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_240px] xl:grid-cols-[minmax(0,1fr)_minmax(240px,320px)] 2xl:grid-cols-[minmax(640px,1fr)_320px]">
         <div className="min-w-0 space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {SORTS.map((option) => (
-              <button
-                key={option.key}
-                onClick={() => setSort(option.key)}
-                className={cn(
-                  "rounded-full border border-border px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
-                  sort === option.key && "border-primary/50 bg-primary/10 text-foreground",
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          <FilterBar
+            query={q}
+            onQueryChange={setQ}
+            placeholder="Search stories, employers…"
+            canReset={canReset}
+            onReset={() => {
+              setQ("");
+              setIndustry(null);
+              setCounty(null);
+              setSort("new");
+            }}
+            filters={[
+              {
+                id: "sort",
+                label: "Sort",
+                value: sort,
+                required: true,
+                options: SORTS.map((s) => s.key),
+                optionLabel: (key) => SORTS.find((s) => s.key === key)?.label ?? key,
+                onChange: (next) => setSort((next as typeof sort) ?? "new"),
+              },
+              {
+                id: "industry",
+                label: "Industry",
+                value: industry,
+                options: filters.industries,
+                onChange: setIndustry,
+              },
+              {
+                id: "county",
+                label: "County",
+                value: county,
+                options: filters.counties,
+                onChange: setCounty,
+              },
+            ]}
+          />
 
           {isPending ? (
             <div className="space-y-4">
@@ -132,17 +152,17 @@ function FeedPage() {
                 <Skeleton key={i} className="h-44 w-full rounded-2xl" />
               ))}
             </div>
-
-          ) : (data?.stories.length ?? 0) === 0 ? (
+          ) : stories.length === 0 ? (
             <p className="rounded-2xl border border-border p-8 text-center text-sm text-muted-foreground">
               No stories match these filters yet.
             </p>
           ) : (
-            data?.stories.map((story, index) => (
+            stories.map((story, index) => (
               <StoryCard key={story.id} story={story} index={index} />
             ))
           )}
         </div>
+
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <div className="rounded-2xl border border-border bg-card p-4">
@@ -224,40 +244,6 @@ function SignalPanel() {
           </span>
           <span className="text-primary">Signal detected</span>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function FilterGroup({
-  title,
-  options,
-  value,
-  onChange,
-}: {
-  title: string;
-  options: string[];
-  value: string | null;
-  onChange: (next: string | null) => void;
-}) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {title}
-      </h2>
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {options.map((option) => (
-          <button
-            key={option}
-            onClick={() => onChange(value === option ? null : option)}
-            className={cn(
-              "rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground",
-              value === option && "border-primary/50 bg-primary/10 text-foreground",
-            )}
-          >
-            {option}
-          </button>
-        ))}
       </div>
     </div>
   );
