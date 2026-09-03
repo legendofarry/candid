@@ -262,11 +262,12 @@ function ProfilePage() {
       </SettingsGroup>
 
       <SettingsGroup title="Notifications & data">
-        <LinkRow
+        <ActionRow
           icon={<Bell className="size-4" />}
           title="Notification centre"
           description="Everything Candid has told you, in one place."
-          to="/notifications"
+          actionLabel="Open"
+          onClick={openNotifications}
         />
         <ActionRow
           icon={<RefreshCw className="size-4" />}

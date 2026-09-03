@@ -21,8 +21,9 @@ import { ThemeToggle } from "@/components/site/theme-toggle";
 import { SplashScreen } from "@/components/site/splash-screen";
 import { RouteProgress } from "@/components/site/route-progress";
 import { NotificationBanners } from "@/components/site/notification-banners";
+import { NotificationsOverlay } from "@/components/site/notifications-overlay";
 import { BadgeClaimModal } from "@/components/site/badge-claim-modal";
-import { useUnreadCount } from "@/lib/notifications-store";
+import { toggleNotifications, useUnreadCount } from "@/lib/notifications-store";
 import { useAuth } from "@/hooks/useAuth";
 import {
   AlertDialog,
@@ -80,6 +81,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <SplashScreen />
       <RouteProgress />
       <NotificationBanners />
+      <NotificationsOverlay />
       <BadgeClaimModal />
       <header className="sticky top-0 z-40 border-b border-border glass-card">
         <div className="app-shell flex h-16 items-center gap-3">
@@ -114,13 +116,11 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             >
               <Search className="size-4" />
             </Link>
-            <Link
-              to="/notifications"
-              aria-label="Notifications"
-              className={cn(
-                "relative inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
-                pathname === "/notifications" && "bg-secondary text-foreground",
-              )}
+            <button
+              type="button"
+              onClick={toggleNotifications}
+              aria-label="Toggle notifications"
+              className="relative inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               <Bell className="size-4" />
               {unread > 0 ? (
@@ -128,7 +128,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
                   {unread > 9 ? "9+" : unread}
                 </span>
               ) : null}
-            </Link>
+            </button>
             <ThemeToggle />
             <Button asChild size="sm" className="glow-primary hidden sm:inline-flex">
               <Link to="/post">
