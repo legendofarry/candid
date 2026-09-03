@@ -149,7 +149,7 @@ export function NotificationsOverlay() {
         {open ? (
           <motion.div
             key="notifications-overlay"
-            className="fixed inset-0 z-[70] flex flex-col"
+            className="fixed inset-0 z-[70] flex flex-col pt-16 sm:pt-0"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -159,7 +159,7 @@ export function NotificationsOverlay() {
             aria-label="Notifications"
           >
             <motion.div
-              className="absolute inset-0 bg-background/80 backdrop-blur-xl"
+              className="absolute inset-0 -z-10 bg-background/80 backdrop-blur-xl"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -298,7 +298,7 @@ export function NotificationsOverlay() {
       </AnimatePresence>
 
       <AlertDialog open={pending !== null} onOpenChange={(next) => (next ? null : setPending(null))}>
-        <AlertDialogContent className="z-[80]">
+        <AlertDialogContent className="z-[95]">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {pending?.type === "clear"
@@ -444,7 +444,7 @@ function Row({
               <MoreVertical className="size-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="z-[80] w-48">
+          <DropdownMenuContent align="end" className="z-[95] w-48">
             <DropdownMenuItem
               onSelect={() => onRequest({ type: n.read ? "unread" : "read", id: n.id })}
             >

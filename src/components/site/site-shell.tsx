@@ -83,7 +83,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <NotificationBanners />
       <NotificationsOverlay />
       <BadgeClaimModal />
-      <header className="sticky top-0 z-40 border-b border-border glass-card">
+      <header className="sticky top-0 z-[80] border-b border-border glass-card">
         <div className="app-shell flex h-16 items-center gap-3">
           <Link to="/" className="flex items-center gap-2">
             <Flame className="size-5 text-primary" />
