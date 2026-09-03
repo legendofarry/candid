@@ -38,7 +38,7 @@ import {
 } from "@/lib/verification.functions";
 import { FollowedStories } from "@/components/site/followed-stories";
 import { useAuth } from "@/hooks/useAuth";
-import { notify as toast } from "@/lib/notifications-store";
+import { notify as toast, openNotifications } from "@/lib/notifications-store";
 import { setPreference, usePreferences } from "@/lib/preferences";
 import { clearPersistedQueries } from "@/lib/query-persist";
 import { storageService } from "@/lib/storage";
