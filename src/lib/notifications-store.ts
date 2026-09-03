@@ -2,6 +2,11 @@ import { useSyncExternalStore } from "react";
 
 export type NotifyKind = "success" | "error" | "info" | "warning";
 
+export type NotifyCategory = "system" | "social" | "action";
+
+/** Where a notification should take the user when it is actionable. */
+export type NotifyLink = { href: string; label?: string };
+
 export type AppNotification = {
   id: string;
   kind: NotifyKind;
@@ -9,16 +14,26 @@ export type AppNotification = {
   description?: string | undefined;
   createdAt: number;
   read: boolean;
+  category?: NotifyCategory;
+  link?: NotifyLink | undefined;
+  /** Epoch ms after which a one-time system notice is swept from storage. */
+  expiresAt?: number | undefined;
 };
 
 export type BannerNotification = AppNotification & { duration: number };
 
 const STORAGE_KEY = "candid.notifications.v1";
 const MAX_STORED = 60;
+/** One-time system notices disappear this long after the user has read them. */
+export const SYSTEM_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+export type OverlayView = { name: "list" } | { name: "detail"; id: string };
 
 let notifications: AppNotification[] = [];
 let banners: BannerNotification[] = [];
 let hydrated = false;
+let overlayOpen = false;
+let overlayView: OverlayView = { name: "list" };
 
 const listeners = new Set<() => void>();
 
@@ -41,6 +56,7 @@ function hydrate() {
       const parsed = JSON.parse(raw) as AppNotification[];
       if (Array.isArray(parsed)) {
         notifications = parsed.slice(0, MAX_STORED);
+        pruneExpired();
         emit();
       }
     }
@@ -62,6 +78,74 @@ function newId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+/** Drops read one-time system notices whose TTL has elapsed. */
+export function pruneExpired() {
+  const now = Date.now();
+  const next = notifications.filter((n) => !(n.expiresAt && n.expiresAt <= now));
+  if (next.length !== notifications.length) {
+    notifications = next;
+    persist();
+    return true;
+  }
+  return false;
+}
+
+export function openNotifications() {
+  if (pruneExpired()) {
+    /* swept on open */
+  }
+  overlayOpen = true;
+  overlayView = { name: "list" };
+  emit();
+}
+
+export function closeNotifications() {
+  overlayOpen = false;
+  overlayView = { name: "list" };
+  emit();
+}
+
+export function openNotificationDetail(id: string) {
+  overlayOpen = true;
+  overlayView = { name: "detail", id };
+  emit();
+}
+
+export function backToNotificationList() {
+  overlayView = { name: "list" };
+  emit();
+}
+
+/**
+ * The bell never disables: on a nested view it steps back to the list first,
+ * on the list it closes the overlay, and when closed it opens it.
+ */
+export function toggleNotifications() {
+  if (!overlayOpen) {
+    openNotifications();
+    return;
+  }
+  if (overlayView.name !== "list") {
+    backToNotificationList();
+    return;
+  }
+  closeNotifications();
+}
+
+export function useNotificationsOverlay() {
+  const open = useSyncExternalStore(
+    subscribe,
+    () => overlayOpen,
+    () => false,
+  );
+  const view = useSyncExternalStore(
+    subscribe,
+    () => overlayView,
+    () => LIST_VIEW,
+  );
+  return { open, view };
+}
+
 export function dismissBanner(id: string) {
   banners = banners.filter((b) => b.id !== id);
   emit();
@@ -70,7 +154,14 @@ export function dismissBanner(id: string) {
 export function pushNotification(
   kind: NotifyKind,
   title: string,
-  options?: { description?: string; duration?: number; silent?: boolean; persist?: boolean },
+  options?: {
+    description?: string;
+    duration?: number;
+    silent?: boolean;
+    persist?: boolean;
+    category?: NotifyCategory;
+    link?: NotifyLink;
+  },
 ) {
   const item: AppNotification = {
     id: newId(),
@@ -79,6 +170,8 @@ export function pushNotification(
     description: options?.description,
     createdAt: Date.now(),
     read: false,
+    category: options?.category ?? (options?.link ? "action" : "system"),
+    link: options?.link,
   };
 
   if (options?.persist !== false) {
@@ -105,14 +198,32 @@ export const notify = {
     pushNotification("warning", title, options),
 };
 
+function withReadStamp(n: AppNotification): AppNotification {
+  const category = n.category ?? "system";
+  return {
+    ...n,
+    read: true,
+    expiresAt:
+      category === "system" && !n.link ? (n.expiresAt ?? Date.now() + SYSTEM_TTL_MS) : n.expiresAt,
+  };
+}
+
+export function markUnread(id: string) {
+  notifications = notifications.map((n) =>
+    n.id === id ? { ...n, read: false, expiresAt: undefined } : n,
+  );
+  persist();
+  emit();
+}
+
 export function markAllRead() {
-  notifications = notifications.map((n) => (n.read ? n : { ...n, read: true }));
+  notifications = notifications.map((n) => (n.read ? n : withReadStamp(n)));
   persist();
   emit();
 }
 
 export function markRead(id: string) {
-  notifications = notifications.map((n) => (n.id === id ? { ...n, read: true } : n));
+  notifications = notifications.map((n) => (n.id === id ? withReadStamp(n) : n));
   persist();
   emit();
 }
@@ -130,6 +241,7 @@ export function clearNotifications() {
 }
 
 const EMPTY: AppNotification[] = [];
+const LIST_VIEW: OverlayView = { name: "list" };
 const EMPTY_BANNERS: BannerNotification[] = [];
 
 export function useNotifications() {
