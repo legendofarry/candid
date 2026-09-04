@@ -5,7 +5,7 @@ import { useRouterState } from "@tanstack/react-router";
 import { BadgeCheck, Loader2, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { notify as toast } from "@/lib/notifications-store";
+import { inbox, notify as toast } from "@/lib/notifications-store";
 import {
   claimVerificationBadge,
   getVerificationState,
@@ -47,7 +47,9 @@ export function BadgeClaimModal() {
     try {
       const result = await claim({ data: undefined });
       if (result.ok) {
-        toast.success("Badge claimed — your account is now verified on Candid");
+        inbox.success("Badge claimed — your account is now verified on Candid", {
+          dedupeKey: "badge-claimed",
+        });
         setOpen(false);
       } else {
         toast.error(result.reason);

@@ -3,7 +3,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { AlertTriangle, ArrowLeft, ArrowRight, ShieldCheck } from "lucide-react";
-import { notify as toast } from "@/lib/notifications-store";
+import { inbox, notify as toast } from "@/lib/notifications-store";
 import { getFilterOptions } from "@/lib/public.functions";
 import { createStory, ensureProfile, findOrCreateCompany } from "@/lib/actions.functions";
 import { useAuth } from "@/hooks/useAuth";
@@ -120,7 +120,9 @@ function PostPage() {
         toast.success("Your story is live");
         navigate({ to: "/stories/$id", params: { id: result.id } });
       } else {
-        toast.success("Submitted for review — it will appear once a moderator approves it.");
+        inbox.info("Story submitted for review", {
+          description: "It will appear in the feed once a moderator approves it.",
+        });
         navigate({ to: "/" });
       }
     } catch (error) {
