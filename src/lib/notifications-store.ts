@@ -60,6 +60,7 @@ function hydrate() {
   if (hydrated || typeof window === "undefined") return;
   hydrated = true;
   try {
+    for (const legacy of LEGACY_STORAGE_KEYS) window.localStorage.removeItem(legacy);
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as AppNotification[];
