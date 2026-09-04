@@ -22,7 +22,14 @@ export type AppNotification = {
 
 export type BannerNotification = AppNotification & { duration: number };
 
-const STORAGE_KEY = "candid.notifications.v1";
+/**
+ * v2 deliberately abandons the v1 blob: v1 stored every transient toast, so
+ * existing users would otherwise open an inbox full of "Report sent" rows.
+ */
+const STORAGE_KEY = "candid.notifications.v2";
+const LEGACY_STORAGE_KEYS = ["candid.notifications.v1"];
+/** Same event pushed twice inside this window collapses into one row. */
+const DEDUPE_WINDOW_MS = 60_000;
 const MAX_STORED = 60;
 /** One-time system notices disappear this long after the user has read them. */
 export const SYSTEM_TTL_MS = 7 * 24 * 60 * 60 * 1000;
