@@ -149,7 +149,7 @@ export function NotificationsOverlay() {
         {open ? (
           <motion.div
             key="notifications-overlay"
-            className="fixed inset-0 z-[70] flex flex-col pt-16 sm:pt-0"
+            className="pointer-events-none fixed inset-0 z-[70] flex flex-col pt-16 sm:pt-0"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -159,16 +159,20 @@ export function NotificationsOverlay() {
             aria-label="Notifications"
           >
             <motion.div
-              className="absolute inset-0 -z-10 bg-background/80 backdrop-blur-xl"
+              className="pointer-events-auto absolute inset-0 top-16 bg-background/80 backdrop-blur-xl sm:top-0"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              onClick={() => {
+                if (view.name !== "list") backToNotificationList();
+                else closeNotifications();
+              }}
             />
 
             <motion.div
               ref={panelRef}
               tabIndex={-1}
-              className="relative flex h-full w-full flex-col outline-none sm:mx-auto sm:my-6 sm:h-[calc(100%-3rem)] sm:max-w-2xl sm:overflow-hidden sm:rounded-3xl sm:border sm:border-border sm:bg-card/70 sm:shadow-2xl"
+              className="pointer-events-auto relative flex h-full w-full flex-col outline-none sm:mx-auto sm:my-6 sm:h-[calc(100%-3rem)] sm:max-w-2xl sm:overflow-hidden sm:rounded-3xl sm:border sm:border-border sm:bg-card/70 sm:shadow-2xl"
               initial={{ y: 32, opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 24, opacity: 0, scale: 0.98 }}
