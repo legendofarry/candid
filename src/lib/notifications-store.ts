@@ -18,11 +18,20 @@ export type AppNotification = {
   link?: NotifyLink | undefined;
   /** Epoch ms after which a one-time system notice is swept from storage. */
   expiresAt?: number | undefined;
+  /** Collapses repeats of the same event inside a short window. */
+  dedupeKey?: string | undefined;
 };
 
 export type BannerNotification = AppNotification & { duration: number };
 
-const STORAGE_KEY = "candid.notifications.v1";
+/**
+ * v2 deliberately abandons the v1 blob: v1 stored every transient toast, so
+ * existing users would otherwise open an inbox full of "Report sent" rows.
+ */
+const STORAGE_KEY = "candid.notifications.v2";
+const LEGACY_STORAGE_KEYS = ["candid.notifications.v1"];
+/** Same event pushed twice inside this window collapses into one row. */
+const DEDUPE_WINDOW_MS = 60_000;
 const MAX_STORED = 60;
 /** One-time system notices disappear this long after the user has read them. */
 export const SYSTEM_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -51,6 +60,7 @@ function hydrate() {
   if (hydrated || typeof window === "undefined") return;
   hydrated = true;
   try {
+    for (const legacy of LEGACY_STORAGE_KEYS) window.localStorage.removeItem(legacy);
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as AppNotification[];
@@ -151,18 +161,23 @@ export function dismissBanner(id: string) {
   emit();
 }
 
-export function pushNotification(
-  kind: NotifyKind,
-  title: string,
-  options?: {
-    description?: string;
-    duration?: number;
-    silent?: boolean;
-    persist?: boolean;
-    category?: NotifyCategory;
-    link?: NotifyLink;
-  },
-) {
+export type PushOptions = {
+  description?: string;
+  duration?: number;
+  /** Skip the on-screen toast (inbox-only delivery). */
+  silent?: boolean;
+  /**
+   * Store in the notifications inbox. Defaults to FALSE: action feedback is
+   * transient. Only durable, "you'd be sad to miss it" events opt in — use the
+   * `inbox` helper rather than passing this by hand.
+   */
+  persist?: boolean;
+  category?: NotifyCategory;
+  link?: NotifyLink;
+  dedupeKey?: string;
+};
+
+export function pushNotification(kind: NotifyKind, title: string, options?: PushOptions) {
   const item: AppNotification = {
     id: newId(),
     kind,
@@ -172,10 +187,20 @@ export function pushNotification(
     read: false,
     category: options?.category ?? (options?.link ? "action" : "system"),
     link: options?.link,
+    dedupeKey: options?.dedupeKey,
   };
 
-  if (options?.persist !== false) {
-    notifications = [item, ...notifications].slice(0, MAX_STORED);
+  if (options?.persist === true) {
+    const key = options?.dedupeKey ?? `${kind}:${title}`;
+    const now = Date.now();
+    const duplicate = notifications.find(
+      (n) => (n.dedupeKey ?? `${n.kind}:${n.title}`) === key && now - n.createdAt < DEDUPE_WINDOW_MS,
+    );
+    if (duplicate) {
+      notifications = [item, ...notifications.filter((n) => n.id !== duplicate.id)].slice(0, MAX_STORED);
+    } else {
+      notifications = [item, ...notifications].slice(0, MAX_STORED);
+    }
     persist();
   }
 
@@ -187,6 +212,7 @@ export function pushNotification(
   return item.id;
 }
 
+/** Transient action feedback. Never stored, never badges the bell. */
 export const notify = {
   success: (title: string, options?: { description?: string; duration?: number }) =>
     pushNotification("success", title, options),
@@ -196,6 +222,20 @@ export const notify = {
     pushNotification("info", title, options),
   warning: (title: string, options?: { description?: string; duration?: number }) =>
     pushNotification("warning", title, options),
+};
+
+type InboxOptions = Omit<PushOptions, "persist">;
+
+/** Durable notification: stored, badged, and shown in the overlay. */
+export function pushInboxNotification(kind: NotifyKind, title: string, options?: InboxOptions) {
+  return pushNotification(kind, title, { ...options, persist: true });
+}
+
+export const inbox = {
+  success: (title: string, options?: InboxOptions) => pushInboxNotification("success", title, options),
+  error: (title: string, options?: InboxOptions) => pushInboxNotification("error", title, options),
+  info: (title: string, options?: InboxOptions) => pushInboxNotification("info", title, options),
+  warning: (title: string, options?: InboxOptions) => pushInboxNotification("warning", title, options),
 };
 
 function withReadStamp(n: AppNotification): AppNotification {

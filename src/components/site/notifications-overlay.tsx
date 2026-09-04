@@ -271,9 +271,10 @@ export function NotificationsOverlay() {
                       {notifications.length === 0 ? (
                         <div className="rounded-3xl border border-dashed border-border p-12 text-center">
                           <Bell className="mx-auto size-6 text-muted-foreground" />
-                          <p className="mt-3 text-sm font-medium">No notifications yet</p>
+                          <p className="mt-3 text-sm font-medium">You&apos;re all caught up</p>
                           <p className="mt-1 text-xs text-muted-foreground">
-                            Replies, mentions and Candid updates will land here.
+                            Replies, mentions, followers and messages from Candid land here.
+                            Everyday confirmations stay as quick toasts.
                           </p>
                         </div>
                       ) : (

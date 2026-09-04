@@ -38,7 +38,7 @@ import {
 } from "@/lib/verification.functions";
 import { FollowedStories } from "@/components/site/followed-stories";
 import { useAuth } from "@/hooks/useAuth";
-import { notify as toast, openNotifications } from "@/lib/notifications-store";
+import { inbox, notify as toast, openNotifications } from "@/lib/notifications-store";
 import { setPreference, usePreferences } from "@/lib/preferences";
 import { clearPersistedQueries } from "@/lib/query-persist";
 import { storageService } from "@/lib/storage";
@@ -98,7 +98,10 @@ function ProfilePage() {
       await registerBiometric(user.uid, user.email ?? "Candid user");
       setEnrolled(true);
       setPreference("biometricUnlock", true);
-      toast.success("Fingerprint / face unlock enabled on this device");
+      inbox.success("Fingerprint / face unlock enabled on this device", {
+        description: "You can turn it off any time from your profile.",
+        dedupeKey: "biometric-enabled",
+      });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not enable biometric unlock");
     }
@@ -129,7 +132,9 @@ function ProfilePage() {
     try {
       const result = await claimBadgeFn();
       if (result.ok) {
-        toast.success("Badge claimed — your account is now verified");
+        inbox.success("Badge claimed — your account is now verified", {
+          dedupeKey: "badge-claimed",
+        });
         await verification.refetch();
       } else {
         toast.error(result.reason);
