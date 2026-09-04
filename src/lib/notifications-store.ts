@@ -18,6 +18,8 @@ export type AppNotification = {
   link?: NotifyLink | undefined;
   /** Epoch ms after which a one-time system notice is swept from storage. */
   expiresAt?: number | undefined;
+  /** Collapses repeats of the same event inside a short window. */
+  dedupeKey?: string | undefined;
 };
 
 export type BannerNotification = AppNotification & { duration: number };
