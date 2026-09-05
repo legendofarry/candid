@@ -25,6 +25,7 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
 import { Route as CompaniesSlugRouteImport } from './routes/companies.$slug'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
+import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as StoriesIdRouteImport } from './routes/stories.$id'
 import { Route as ApiPublicOwnerCompaniesRouteImport } from './routes/api/public/owner/companies'
 import { Route as ApiPublicOwnerReportsRouteImport } from './routes/api/public/owner/reports'
@@ -112,6 +113,11 @@ const MessagesIndexRoute = MessagesIndexRouteImport.update({
   path: '/messages/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MessagesIdRoute = MessagesIdRouteImport.update({
+  id: '/messages/$id',
+  path: '/messages/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StoriesIdRoute = StoriesIdRouteImport.update({
   id: '/stories/$id',
   path: '/stories/$id',
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/salaries': typeof SalariesRoute
   '/search': typeof SearchRoute
   '/companies/$slug': typeof CompaniesSlugRoute
+  '/messages/$id': typeof MessagesIdRoute
   '/stories/$id': typeof StoriesIdRoute
   '/companies/': typeof CompaniesIndexRoute
   '/messages/': typeof MessagesIndexRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/salaries': typeof SalariesRoute
   '/search': typeof SearchRoute
   '/companies/$slug': typeof CompaniesSlugRoute
+  '/messages/$id': typeof MessagesIdRoute
   '/stories/$id': typeof StoriesIdRoute
   '/companies': typeof CompaniesIndexRoute
   '/messages': typeof MessagesIndexRoute
@@ -207,6 +215,7 @@ export interface FileRoutesById {
   '/salaries': typeof SalariesRoute
   '/search': typeof SearchRoute
   '/companies/$slug': typeof CompaniesSlugRoute
+  '/messages/$id': typeof MessagesIdRoute
   '/stories/$id': typeof StoriesIdRoute
   '/companies/': typeof CompaniesIndexRoute
   '/messages/': typeof MessagesIndexRoute
@@ -233,6 +242,7 @@ export interface FileRouteTypes {
     | '/salaries'
     | '/search'
     | '/companies/$slug'
+    | '/messages/$id'
     | '/stories/$id'
     | '/companies/'
     | '/messages/'
@@ -257,6 +267,7 @@ export interface FileRouteTypes {
     | '/salaries'
     | '/search'
     | '/companies/$slug'
+    | '/messages/$id'
     | '/stories/$id'
     | '/companies'
     | '/messages'
@@ -281,6 +292,7 @@ export interface FileRouteTypes {
     | '/salaries'
     | '/search'
     | '/companies/$slug'
+    | '/messages/$id'
     | '/stories/$id'
     | '/companies/'
     | '/messages/'
@@ -306,6 +318,7 @@ export interface RootRouteChildren {
   SalariesRoute: typeof SalariesRoute
   SearchRoute: typeof SearchRoute
   CompaniesSlugRoute: typeof CompaniesSlugRoute
+  MessagesIdRoute: typeof MessagesIdRoute
   StoriesIdRoute: typeof StoriesIdRoute
   CompaniesIndexRoute: typeof CompaniesIndexRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
@@ -430,6 +443,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MessagesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/messages/$id': {
+      id: '/messages/$id'
+      path: '/messages/$id'
+      fullPath: '/messages/$id'
+      preLoaderRoute: typeof MessagesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stories/$id': {
       id: '/stories/$id'
       path: '/stories/$id'
@@ -490,6 +510,7 @@ const rootRouteChildren: RootRouteChildren = {
   SalariesRoute: SalariesRoute,
   SearchRoute: SearchRoute,
   CompaniesSlugRoute: CompaniesSlugRoute,
+  MessagesIdRoute: MessagesIdRoute,
   StoriesIdRoute: StoriesIdRoute,
   CompaniesIndexRoute: CompaniesIndexRoute,
   MessagesIndexRoute: MessagesIndexRoute,
