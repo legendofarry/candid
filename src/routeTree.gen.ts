@@ -24,6 +24,7 @@ import { Route as SalariesRouteImport } from './routes/salaries'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
 import { Route as CompaniesSlugRouteImport } from './routes/companies.$slug'
+import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as StoriesIdRouteImport } from './routes/stories.$id'
 import { Route as ApiPublicOwnerCompaniesRouteImport } from './routes/api/public/owner/companies'
 import { Route as ApiPublicOwnerReportsRouteImport } from './routes/api/public/owner/reports'
@@ -106,6 +107,11 @@ const CompaniesSlugRoute = CompaniesSlugRouteImport.update({
   path: '/companies/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MessagesIndexRoute = MessagesIndexRouteImport.update({
+  id: '/messages/',
+  path: '/messages/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StoriesIdRoute = StoriesIdRouteImport.update({
   id: '/stories/$id',
   path: '/stories/$id',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/companies/$slug': typeof CompaniesSlugRoute
   '/stories/$id': typeof StoriesIdRoute
   '/companies/': typeof CompaniesIndexRoute
+  '/messages/': typeof MessagesIndexRoute
   '/api/public/owner/companies': typeof ApiPublicOwnerCompaniesRoute
   '/api/public/owner/reports': typeof ApiPublicOwnerReportsRoute
   '/api/public/owner/stats': typeof ApiPublicOwnerStatsRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByTo {
   '/companies/$slug': typeof CompaniesSlugRoute
   '/stories/$id': typeof StoriesIdRoute
   '/companies': typeof CompaniesIndexRoute
+  '/messages': typeof MessagesIndexRoute
   '/api/public/owner/companies': typeof ApiPublicOwnerCompaniesRoute
   '/api/public/owner/reports': typeof ApiPublicOwnerReportsRoute
   '/api/public/owner/stats': typeof ApiPublicOwnerStatsRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/companies/$slug': typeof CompaniesSlugRoute
   '/stories/$id': typeof StoriesIdRoute
   '/companies/': typeof CompaniesIndexRoute
+  '/messages/': typeof MessagesIndexRoute
   '/api/public/owner/companies': typeof ApiPublicOwnerCompaniesRoute
   '/api/public/owner/reports': typeof ApiPublicOwnerReportsRoute
   '/api/public/owner/stats': typeof ApiPublicOwnerStatsRoute
@@ -226,6 +235,7 @@ export interface FileRouteTypes {
     | '/companies/$slug'
     | '/stories/$id'
     | '/companies/'
+    | '/messages/'
     | '/api/public/owner/companies'
     | '/api/public/owner/reports'
     | '/api/public/owner/stats'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/companies/$slug'
     | '/stories/$id'
     | '/companies'
+    | '/messages'
     | '/api/public/owner/companies'
     | '/api/public/owner/reports'
     | '/api/public/owner/stats'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/companies/$slug'
     | '/stories/$id'
     | '/companies/'
+    | '/messages/'
     | '/api/public/owner/companies'
     | '/api/public/owner/reports'
     | '/api/public/owner/stats'
@@ -296,6 +308,7 @@ export interface RootRouteChildren {
   CompaniesSlugRoute: typeof CompaniesSlugRoute
   StoriesIdRoute: typeof StoriesIdRoute
   CompaniesIndexRoute: typeof CompaniesIndexRoute
+  MessagesIndexRoute: typeof MessagesIndexRoute
   ApiPublicOwnerCompaniesRoute: typeof ApiPublicOwnerCompaniesRoute
   ApiPublicOwnerReportsRoute: typeof ApiPublicOwnerReportsRoute
   ApiPublicOwnerStatsRoute: typeof ApiPublicOwnerStatsRoute
@@ -410,6 +423,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompaniesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/messages/': {
+      id: '/messages/'
+      path: '/messages'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof MessagesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stories/$id': {
       id: '/stories/$id'
       path: '/stories/$id'
@@ -472,6 +492,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompaniesSlugRoute: CompaniesSlugRoute,
   StoriesIdRoute: StoriesIdRoute,
   CompaniesIndexRoute: CompaniesIndexRoute,
+  MessagesIndexRoute: MessagesIndexRoute,
   ApiPublicOwnerCompaniesRoute: ApiPublicOwnerCompaniesRoute,
   ApiPublicOwnerReportsRoute: ApiPublicOwnerReportsRoute,
   ApiPublicOwnerStatsRoute: ApiPublicOwnerStatsRoute,
