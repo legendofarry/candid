@@ -37,6 +37,7 @@ import {
   getVerificationState,
 } from "@/lib/verification.functions";
 import { FollowedStories } from "@/components/site/followed-stories";
+import { PrivacySettings } from "@/components/site/privacy-settings";
 import { useAuth } from "@/hooks/useAuth";
 import { inbox, notify as toast, openNotifications } from "@/lib/notifications-store";
 import { setPreference, usePreferences } from "@/lib/preferences";
