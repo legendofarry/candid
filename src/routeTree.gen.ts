@@ -27,6 +27,7 @@ import { Route as CompaniesSlugRouteImport } from './routes/companies.$slug'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as StoriesIdRouteImport } from './routes/stories.$id'
+import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as ApiPublicOwnerCompaniesRouteImport } from './routes/api/public/owner/companies'
 import { Route as ApiPublicOwnerReportsRouteImport } from './routes/api/public/owner/reports'
 import { Route as ApiPublicOwnerStatsRouteImport } from './routes/api/public/owner/stats'
@@ -123,6 +124,11 @@ const StoriesIdRoute = StoriesIdRouteImport.update({
   path: '/stories/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UUsernameRoute = UUsernameRouteImport.update({
+  id: '/u/$username',
+  path: '/u/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicOwnerCompaniesRoute = ApiPublicOwnerCompaniesRouteImport.update({
   id: '/api/public/owner/companies',
   path: '/api/public/owner/companies',
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/companies/$slug': typeof CompaniesSlugRoute
   '/messages/$id': typeof MessagesIdRoute
   '/stories/$id': typeof StoriesIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/companies/': typeof CompaniesIndexRoute
   '/messages/': typeof MessagesIndexRoute
   '/api/public/owner/companies': typeof ApiPublicOwnerCompaniesRoute
@@ -191,6 +198,7 @@ export interface FileRoutesByTo {
   '/companies/$slug': typeof CompaniesSlugRoute
   '/messages/$id': typeof MessagesIdRoute
   '/stories/$id': typeof StoriesIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/companies': typeof CompaniesIndexRoute
   '/messages': typeof MessagesIndexRoute
   '/api/public/owner/companies': typeof ApiPublicOwnerCompaniesRoute
@@ -217,6 +225,7 @@ export interface FileRoutesById {
   '/companies/$slug': typeof CompaniesSlugRoute
   '/messages/$id': typeof MessagesIdRoute
   '/stories/$id': typeof StoriesIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/companies/': typeof CompaniesIndexRoute
   '/messages/': typeof MessagesIndexRoute
   '/api/public/owner/companies': typeof ApiPublicOwnerCompaniesRoute
@@ -244,6 +253,7 @@ export interface FileRouteTypes {
     | '/companies/$slug'
     | '/messages/$id'
     | '/stories/$id'
+    | '/u/$username'
     | '/companies/'
     | '/messages/'
     | '/api/public/owner/companies'
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/companies/$slug'
     | '/messages/$id'
     | '/stories/$id'
+    | '/u/$username'
     | '/companies'
     | '/messages'
     | '/api/public/owner/companies'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/companies/$slug'
     | '/messages/$id'
     | '/stories/$id'
+    | '/u/$username'
     | '/companies/'
     | '/messages/'
     | '/api/public/owner/companies'
@@ -320,6 +332,7 @@ export interface RootRouteChildren {
   CompaniesSlugRoute: typeof CompaniesSlugRoute
   MessagesIdRoute: typeof MessagesIdRoute
   StoriesIdRoute: typeof StoriesIdRoute
+  UUsernameRoute: typeof UUsernameRoute
   CompaniesIndexRoute: typeof CompaniesIndexRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
   ApiPublicOwnerCompaniesRoute: typeof ApiPublicOwnerCompaniesRoute
@@ -457,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoriesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$username': {
+      id: '/u/$username'
+      path: '/u/$username'
+      fullPath: '/u/$username'
+      preLoaderRoute: typeof UUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/owner/companies': {
       id: '/api/public/owner/companies'
       path: '/api/public/owner/companies'
@@ -512,6 +532,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompaniesSlugRoute: CompaniesSlugRoute,
   MessagesIdRoute: MessagesIdRoute,
   StoriesIdRoute: StoriesIdRoute,
+  UUsernameRoute: UUsernameRoute,
   CompaniesIndexRoute: CompaniesIndexRoute,
   MessagesIndexRoute: MessagesIndexRoute,
   ApiPublicOwnerCompaniesRoute: ApiPublicOwnerCompaniesRoute,

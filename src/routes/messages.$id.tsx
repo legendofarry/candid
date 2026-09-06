@@ -83,7 +83,7 @@ function ChatScreen() {
       void queryClient.invalidateQueries({ queryKey: ["conversation", id] });
       void queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
-    onError: (err: Error) => toast.error("Message not sent", err.message),
+    onError: (err: Error) => toast.error("Message not sent", { description: err.message }),
   });
 
   const toggleReaction = useMutation({
@@ -109,7 +109,9 @@ function ChatScreen() {
         kind: file.type.startsWith("image/") ? "image" : "file",
       });
     } catch {
-      toast.error("Upload failed", "That attachment could not be uploaded. Try a smaller file.");
+      toast.error("Upload failed", {
+        description: "That attachment could not be uploaded. Try a smaller file.",
+      });
     } finally {
       setUploading(false);
     }
