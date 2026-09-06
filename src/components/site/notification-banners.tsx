@@ -68,7 +68,9 @@ function Banner({ banner }: { banner: BannerNotification }) {
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold leading-snug text-foreground">{banner.title}</p>
           {banner.description ? (
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{banner.description}</p>
+            <p className="mt-1 break-words text-xs leading-relaxed text-muted-foreground">
+              {banner.description}
+            </p>
           ) : null}
         </div>
         <button
@@ -93,7 +95,10 @@ export function NotificationBanners() {
   if (banners.length === 0) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-3 z-[60] flex flex-col items-center gap-2 px-3 sm:left-auto sm:right-4 sm:w-[380px] sm:items-end sm:px-0">
+    <div
+      className="pointer-events-none fixed inset-x-0 z-[80] flex flex-col items-center gap-2 px-3 sm:left-auto sm:right-4 sm:w-[380px] sm:items-end sm:px-0"
+      style={{ top: "calc(env(safe-area-inset-top, 0px) + 5.25rem)" }}
+    >
       {banners.map((banner) => (
         <Banner key={banner.id} banner={banner} />
       ))}
