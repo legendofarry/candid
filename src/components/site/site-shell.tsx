@@ -107,6 +107,21 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
             <Link
+              to="/messages"
+              aria-label="Messages"
+              className={cn(
+                "relative inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
+                pathname.startsWith("/messages") && "bg-secondary text-foreground",
+              )}
+            >
+              <MessagesSquare className="size-4" />
+              {unreadMessages > 0 ? (
+                <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                  {unreadMessages > 9 ? "9+" : unreadMessages}
+                </span>
+              ) : null}
+            </Link>
+            <Link
               to="/search"
               aria-label="Search Candid"
               className={cn(
