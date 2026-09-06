@@ -299,6 +299,8 @@ function ProfilePage() {
         />
       </SettingsGroup>
 
+      <PrivacySettings />
+
       <SettingsGroup title="About Candid">
         <LinkRow
           icon={<BookOpen className="size-4" />}
