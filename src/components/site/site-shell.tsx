@@ -7,6 +7,7 @@ import {
   Home,
   Info,
   LogOut,
+  MessagesSquare,
   MoreHorizontal,
   PenLine,
   Search,
@@ -24,6 +25,9 @@ import { NotificationBanners } from "@/components/site/notification-banners";
 import { NotificationsOverlay } from "@/components/site/notifications-overlay";
 import { BadgeClaimModal } from "@/components/site/badge-claim-modal";
 import { toggleNotifications, useUnreadCount } from "@/lib/notifications-store";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getUnreadMessages } from "@/lib/messaging.functions";
 import { useAuth } from "@/hooks/useAuth";
 import {
   AlertDialog,
@@ -72,6 +76,14 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const unread = useUnreadCount();
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const fetchUnreadMessages = useServerFn(getUnreadMessages);
+  const { data: messageState } = useQuery({
+    queryKey: ["unread-messages", user?.uid ?? null],
+    queryFn: () => fetchUnreadMessages(),
+    enabled: Boolean(user),
+    refetchInterval: 20000,
+  });
+  const unreadMessages = messageState?.unread ?? 0;
 
   const nested = isNestedRoute(pathname);
   const showFooter = pathname === "/";
